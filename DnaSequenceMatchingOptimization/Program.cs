@@ -1,7 +1,9 @@
-﻿namespace DnaSequenceMatchingOptimization;
+﻿using BenchmarkDotNet.Running;
+
+namespace DnaSequenceMatchingOptimization;
 
 class Program {
     static void Main(string[] args) {
-        Console.WriteLine("Hello, World!");
+        Console.WriteLine(BenchmarkRunner.Run<DnaSequenceMatchingBenchmarks>());
     }
 }
