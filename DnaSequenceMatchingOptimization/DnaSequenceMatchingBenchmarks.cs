@@ -156,4 +156,35 @@ public class DnaSequenceMatchingBenchmarks {
     public void Benchmark3() {
         DnaSequenceMatching3.MatchDnaSequence(dnaSequence);
     }
+    
+    [IterationSetup(Target = nameof(Benchmark4))]
+    public void Setup4() {
+        switch (DB_SIZE) {
+            case 0:
+                DnaSequenceMatching4.SetupTiny();
+                break;
+            
+            case 1:
+                DnaSequenceMatching4.SetupSmall();
+                break;
+            
+            case 2:
+                DnaSequenceMatching4.SetupMedium();
+                break;
+            
+            case 3:
+                DnaSequenceMatching4.SetupLarge();
+                break;
+            
+            case 4:
+                DnaSequenceMatching4.SetupHuge();
+                break;
+        }
+    }
+
+    [Benchmark]
+    [IterationCount(5)]
+    public void Benchmark4() {
+        DnaSequenceMatching4.MatchDnaSequence(dnaSequence);
+    }
 }

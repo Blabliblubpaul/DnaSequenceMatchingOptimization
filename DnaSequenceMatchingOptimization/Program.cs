@@ -3,7 +3,8 @@
 namespace DnaSequenceMatchingOptimization;
 
 class Program {
-    static void Main(string[] args) {
-        Console.WriteLine(BenchmarkRunner.Run<DnaSequenceMatchingBenchmarks>());
+    static void Main() {
+        Console.WriteLine(BenchmarkRunner.Run<DnaSequenceMatchingSingleBenchmark>());
+        // Console.WriteLine(BenchmarkRunner.Run<DnaSequenceMatchingBenchmarks>());
     }
 }

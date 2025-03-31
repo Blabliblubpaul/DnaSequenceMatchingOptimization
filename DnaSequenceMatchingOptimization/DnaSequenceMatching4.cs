@@ -5,7 +5,7 @@ using System.Runtime.Intrinsics.X86;
 
 namespace DnaSequenceMatchingOptimization;
 
-public static unsafe class DnaSequenceMatching3 {
+public static unsafe class DnaSequenceMatching4 {
     private const ulong bitMask = 0x5555555555555555UL;
     private static readonly Vector256<ulong> bitMask4 = Vector256.Create(bitMask);
 
@@ -15,6 +15,13 @@ public static unsafe class DnaSequenceMatching3 {
     private static ulong* database;
 
     private static int dbSize;
+
+    private static int threadAmount = 1;
+
+    private static ulong currentBinSeq;
+
+    private delegate void EarlyExit();
+    private static event EarlyExit EarlyExitFound;
     
     public static void SetupTiny() {
         AllocateDatabase(DnaDatabase.DATASET_TINY_SIZE);
@@ -62,6 +69,8 @@ public static unsafe class DnaSequenceMatching3 {
             *(database + i) = SequenceToBinary(sequence);
             i++;
         }
+
+        threadAmount = 8;
     }
     
     public static void SetupHuge() {
@@ -74,6 +83,8 @@ public static unsafe class DnaSequenceMatching3 {
             *(database + i) = SequenceToBinary(sequence);
             i++;
         }
+
+        threadAmount = 8;
     }
 
     private static void AllocateDatabase(int size) {
@@ -83,17 +94,48 @@ public static unsafe class DnaSequenceMatching3 {
     }
 
     public static DnaSequenceMatchResult MatchDnaSequence(string sequence) {
-        // Create a local copy of bitMask4 to leverage faster stack lookup
-        Vector256<ulong> bitMask4 = DnaSequenceMatching3.bitMask4;
+        currentBinSeq = SequenceToBinary(sequence);
         
-        ulong binSeq = SequenceToBinary(sequence);
+        int threadDbSize = dbSize / threadAmount;
 
-        Vector256<ulong> binSeq4 = Vector256.Create(binSeq);
+        CancellationTokenSource cts = new();
+        CancellationToken ct = cts.Token;
+        
+        Task<(int distance, int Index, double accuracy)>[] tasks = new Task<(int distance, int Index, double accuracy)>[threadAmount];
+        
+        EarlyExitFound += cts.Cancel;
+
+        for (int i = 0; i < threadAmount; i++) {
+            int startIndex = threadDbSize * i;
+            tasks[i] = Task.Run(() => MatchDnaSequence(startIndex, threadDbSize, ct), ct);
+        }
+
+        Task.WhenAll(tasks).Wait();
+        
+        EarlyExitFound -= cts.Cancel;
+
+        int smallest = 0;
+
+        for (int i = 1; i < threadAmount; i++) {
+            if (tasks[i].Result.distance < tasks[smallest].Result.distance) {
+                smallest = i;
+            }
+        }
+
+        return new DnaSequenceMatchResult(tasks[smallest].Result.Index, tasks[smallest].Result.accuracy);
+    }
+
+    private static (int distance, int index, double accuracy) MatchDnaSequence(int startIndex, int length, CancellationToken ct) {
+        // Create a local copy of bitMask4 to leverage faster stack lookup
+        Vector256<ulong> bitMask4 = DnaSequenceMatching4.bitMask4;
+        
+        Vector256<ulong> binSeq4 = Vector256.Create(currentBinSeq);
 
         int smallestDistance = 32;
         int index = 0;
 
-        for (int i = 0; i < dbSize; i += BATCH_SIZE) {
+        int end = startIndex + length;
+        for (int i = startIndex; i < end; i += BATCH_SIZE) {
             Vector256<ulong> dbSeq4;
 
             if (i + 3 < dbSize) {
@@ -138,13 +180,18 @@ public static unsafe class DnaSequenceMatching3 {
             
             // Early exit if a complete match is found.
             if (smallestDistance == 0) {
+                EarlyExitFound();
+                break;
+            }
+
+            if (ct.IsCancellationRequested) {
                 break;
             }
         }
     
         double accuracy = 1 - smallestDistance / 32.0d;
         
-        return new DnaSequenceMatchResult(index, accuracy);
+        return (smallestDistance, index, accuracy);
     }
 
     private static ulong SequenceToBinary(string sequence) {
