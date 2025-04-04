@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DnaSequenceMatchingOptimization", "DnaSequenceMatchingOptimization\DnaSequenceMatchingOptimization.csproj", "{10DCC346-8764-478E-B5E2-0C5E16CFF90D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrimeNumbersOptimization", "PrimeNumbersOptimization\PrimeNumbersOptimization.csproj", "{1FCEB461-EFF2-4C5C-9E86-1E646241E09E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{10DCC346-8764-478E-B5E2-0C5E16CFF90D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{10DCC346-8764-478E-B5E2-0C5E16CFF90D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{10DCC346-8764-478E-B5E2-0C5E16CFF90D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1FCEB461-EFF2-4C5C-9E86-1E646241E09E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1FCEB461-EFF2-4C5C-9E86-1E646241E09E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1FCEB461-EFF2-4C5C-9E86-1E646241E09E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1FCEB461-EFF2-4C5C-9E86-1E646241E09E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
